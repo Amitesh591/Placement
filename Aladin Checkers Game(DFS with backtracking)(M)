@@ -1,0 +1,68 @@
+// only two directions are allowed, in the direction of top row
+const vector<vector<int>> dirs = {{-2, 2}, {-2, -2}};
+
+// check if coordinates are inside the check limits
+bool isValid(vector<string> &check, int r, int c) {
+    int rows = check.size();
+    int cols = check[0].size();
+    
+    return r >= 0 && r < rows && c >= 0 && c < cols;
+}
+
+// recursively get the max allowed moves
+int getMaxMoves(vector<string> &check, int r, int c) {
+    
+    int ret = 0;
+    
+    for (auto &d : dirs) {
+        // next move coordinates
+        int r2 = r + d[0];
+        int c2 = c + d[1];
+        // coordinates to check for Aladdin piece
+        int r1 = r + d[0] / 2;
+        int c1 = c + d[1] / 2;
+        
+        if (isValid(check, r2, c2) && check[r2][c2] == '.' && check[r1][c1] == 'X') {
+            // eat the Aladdin piece, to avoid to see it again in the recursive branch
+            check[r1][c1] = '.';
+            ret = max(ret, 1 + getMaxMoves(check, r2, c2));
+            // backtrack the change
+            check[r1][c1] = 'X';
+        }
+    }
+    
+    return ret;
+}
+
+// find the Jafar piece, return at the first one found
+pair<int, int> findJafar(vector<string> &check) {
+    int rows = check.size();
+    int cols = check[0].size();
+    
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (check[r][c] == 'O')
+                return {r, c};
+        }
+    }
+    
+    return {-1, -1};
+}
+
+int main() {
+    vector<string> b = {
+        {"..X..."},
+        {"......"},
+        {"....X."},
+        {".X...."},
+        {"..X.X."},
+        {"...O.."}
+    };
+    
+    auto p = findJafar(b);
+    
+    if (p.first == -1)
+        cout << "Jafar not found" << endl;
+    
+    cout << "Moves: " << getMaxMoves(b, p.first, p.second) << endl;
+}
